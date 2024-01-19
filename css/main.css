@@ -1,0 +1,57 @@
+/*
+ * ------------------------------------------------------------------------------
+ * Created by Ulysses Carlos on 01/18/2024 at 09:26 PM
+ *
+ * main.css
+ *
+ * ------------------------------------------------------------------------------
+ */
+
+body {
+    background-color: #b5adff;
+}
+
+h1.title {
+    text-align: center;
+    font-family: Helvetica;
+}
+
+div.main-puzzle-container {
+    margin: auto;
+    border-color: #ffdead;
+    background-color: #adceff;
+    border-style: ridge;
+    border-width: 10px;
+    width: 600px;
+    height: 600px;
+    display: grid;
+
+    grid-template-columns: 150px 150px 150px 150px;
+    grid-template-rows: 150px 150px 150px 150px;
+    
+}
+
+div.main-puzzle-container.puzzle-piece {
+    margin: auto;
+    width: 150px;
+    height: 150px;
+    border-color: white;
+    border-width: 1px;
+    background-image: url("../images/blank.jpg");
+    background-size: 150px;
+    background-position: 150px 160px;
+}
+
+div.button-container {
+    margin: auto;
+    text-align: center;
+}
+
+buttton {
+    margin: auto;
+    text-align: center;
+}
+
+audio.music-player {
+    visibility: hidden;
+}
