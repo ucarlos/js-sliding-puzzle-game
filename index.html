@@ -9,7 +9,7 @@
   <body>
       <h1 class="title">Sliding Puzzle Game</h1>
 
-      <div class="main-puzzle-container">
+      <div id="main-puzzle-container" class="main-puzzle-container">
           <div class="main-puzzle-container puzzle-piece"></div>
           <div class="main-puzzle-container puzzle-piece"></div>
           <div class="main-puzzle-container puzzle-piece"></div>
@@ -29,9 +29,13 @@
       </div>
 
       <div class="button-container">
-          <button>Start the Game!</button>
-          <button>Change the Difficulty!</button>
-          <button>Solve it for Me!</button>
+          <button style="position: relative; right: 20px;" onclick="changeDifficulty();">Change the Difficulty!</button>
+          <button style="font-weight: bold;" onclick="startGame();">Start the game!</button>
+          <button style="position: relative; left: 20px;" onclick="solveGame();">Solve it for Me!</button>
+      </div>
+
+      <div class="button-container">
+          <button id="puzzle-size-button"> Set Puzzle Size!</button>
       </div>
 
       <audio id="music-player" class="music-player" ended="playRandomTrack()">

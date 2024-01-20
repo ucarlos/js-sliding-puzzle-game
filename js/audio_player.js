@@ -56,5 +56,4 @@ function playRandomTrack() {
 }
 
 // Now bind it to the audioElement:
-// let audioElement = document.getElementById("music-player");
 playRandomTrack();

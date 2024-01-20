@@ -38,18 +38,27 @@ div.main-puzzle-container.puzzle-piece {
     border-color: white;
     border-width: 1px;
     background-image: url("../images/blank.jpg");
-    background-size: 150px;
-    background-position: 150px 160px;
+    /* background-size: 150px; */
+    /* background-position: 150px 160px; */
 }
 
 div.button-container {
     margin: auto;
     text-align: center;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    width: 580px;
 }
 
 buttton {
     margin: auto;
     text-align: center;
+}
+
+div.button-container  button#puzzle-size-button {
+    grid-column: 2;
+    margin-top: 10px;
+    font-weight: bolder;
 }
 
 audio.music-player {
