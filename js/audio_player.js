@@ -28,6 +28,12 @@ function playRandomTrack() {
 	"song03.mp3",
 	"song04.mp3",
 	"song05.mp3",
+	"song06.mp3",
+	"song07.mp3",
+	"song08.mp3",
+	"song09.mp3",
+	"song10.mp3",
+	"song11.mp3"
     ];
 
     const randomTrackValue = songTrackList[inclusiveRandomInt(0, songTrackList.length)];

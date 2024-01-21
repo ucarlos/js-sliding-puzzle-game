@@ -23,15 +23,18 @@ const constantObject = {
         "image04.jpg",
         "image05.jpg",
         "image06.jpg",
-	"image07.jpg",
-	"image08.jpg",
-	"image09.jpg",
-	"image10.jpg",
-	"image11.jpg",
-	"image12.jpg"
+        "image07.jpg",
+        "image08.jpg",
+        "image09.jpg",
+        "image10.jpg",
+        "image11.jpg",
+        "image12.jpg"
     ],
     "blankImagePath": "./images/blank.jpg",
-    "currentImage" : "./images/blank.jpg",
+    "emptyPuzzlePiecePath": "./images/emptypiece.jpg",
+
+    "puzzleColumnLength": -1,
+    "puzzleRowLength": -1,
     
     "puzzleImageWidth": 1000,
     "puzzleImageHeight": 1000,
@@ -72,6 +75,10 @@ function inclusiveRandomInt(min, max) {
 }
 
 
+function clearPuzzleHistory() {
+    puzzleHistoryList.length = 0;
+}
+
 //------------------------------------------------------------------------------
 // Sliding Puzzle Section
 //------------------------------------------------------------------------------
@@ -89,6 +96,10 @@ function solveGame() {
 }
 
 
+function SetPuzzleSize() {
+
+}
+
 
 
 //--------------------------------------
@@ -96,28 +107,159 @@ function solveGame() {
 //--------------------------------------
 
 
+function moveTile(child) {
+    const currentElement = child;
+
+    // If there's no id associated with this, bail:
+    if (!currentElement || !currentElement.id)
+        return false;
+
+    // child.id = `piece_${xValue}_${yValue}`;
+    // piece_0_1
+    const puzzleRegex = /piece_\d_\d/;
+
+    // fail if the id doesn't follow a piece_x_y pattern:
+    if (!puzzleRegex.test(currentElement.id))
+        return false;
+
+    // If the title is the blank tile, abort:
+    if (isTileBlank(currentElement))
+        return false;
+
+    
+    // Parse the x and y coordinates from the id by removing the 'piece_' string:
+    const coordinateString = String(currentElement.id).substring(6);
+    const xValue = Number(coordinateString[0]);
+    const yValue = Number(coordinateString[2]);
+
+    // now check if there any blank tiles around:
+
+    const blankElement = findBlankTile(currentElement, xValue, yValue);
+    if (blankElement) {
+        swapTileElementWithBlankTile(currentElement, blankElement);
+    }
+}
 
 
-function moveTile(sourceTile, destinationTile) {
+function swapTileElementWithBlankTile(currentElement, blankElement) {
+    // Bail if the blankElement is NOT blank. This shouldn't happen, but it might:
+    if (!isTileBlank(blankElement)) {
+        console.log(`swapTileElementWithBlankTile(): blankElement ${blankElement} is NOT BLANK! I'm getting out of here!`);
+        return;
+    }
+
+    // First store the attempt:
+    storeHistoryObject(blankElement, currentElement);
+    
+    const tempBackgroundPositionX = currentElement.style.backgroundPositionX;
+    const tempBackgroundPositionY = currentElement.style.backgroundPositionY;
+    const tempBackgroundSize = currentElement.style.backgroundSize;
+    const tempBackgroundImage = currentElement.style.backgroundImage;
+
+    currentElement.style.backgroundPositionX = blankElement.style.backgroundPositionX;
+    currentElement.style.backgroundPositionY = blankElement.style.backgroundPositionY;
+    currentElement.style.backgroundSize = blankElement.style.backgroundSize;
+    currentElement.style.backgroundImage = blankElement.style.backgroundImage;
+
+
+    blankElement.style.backgroundPositionX = tempBackgroundPositionX;
+    blankElement.style.backgroundPositionY = tempBackgroundPositionY;
+    blankElement.style.backgroundSize = tempBackgroundSize;
+    blankElement.style.backgroundImage = tempBackgroundImage;
 
 }
 
-function canMoveTileUp(tile) {
 
+function findBlankTile(tileElement, xValue, yValue) {   
+    // Leave this undefined:
+    let blankTileCoordinateList;
+        
+    if ((blankTileCoordinateList = canMoveTileUp(tileElement, xValue, yValue)))
+        ;
+    else if ((blankTileCoordinateList = canMoveTileDown(tileElement, xValue, yValue)))
+        ;
+    else if ((blankTileCoordinateList = canMoveTileLeft(tileElement, xValue, yValue)))
+        ;
+    else if ((blankTileCoordinateList = canMoveTileRight(tileElement, xValue, yValue)))
+        ;
+    else
+        blankTileCoordinateList = [-1, -1];
+           
+    return document.getElementById(`piece_${blankTileCoordinateList[0]}_${blankTileCoordinateList[1]}`);
 }
 
-function canMoveTileDown(tile) {
+function canMoveTileUp(tileElement, xValue, yValue) {
+    const checkElementX = xValue;
+    const checkElementY = yValue - 1;
 
+    const puzzleRowLength = constantObject.puzzleRowLength;
+    if (!(0 <= checkElementX && checkElementX <= puzzleRowLength) || !(0 <= checkElementY && checkElementY <= puzzleRowLength))
+        return false;
+
+    // Now retrieve the element id and check:
+    let checkElement = document.getElementById(`piece_${checkElementX}_${checkElementY}`);
+    
+    if (!checkElement)
+        return false;
+
+    return isTileBlank(checkElement)? [checkElementX, checkElementY] : false;
 }
 
-function canMoveTileLeft(tile) {
+function canMoveTileDown(tileElement, xValue, yValue) {
+    const checkElementX = xValue;
+    const checkElementY = yValue + 1;
 
+    const puzzleRowLength = constantObject.puzzleRowLength;
+    if (!(0 <= checkElementX && checkElementX <= puzzleRowLength) || !(0 <= checkElementY && checkElementY <= puzzleRowLength))
+        return false;
+
+    // Now retrieve the element id and check:
+    let checkElement = document.getElementById(`piece_${checkElementX}_${checkElementY}`);
+    
+    if (!checkElement)
+        return false;
+
+    return isTileBlank(checkElement)? [checkElementX, checkElementY] : false;
 }
 
-function canMoveTileRight(tile) {
+function canMoveTileLeft(tileElement, xValue, yValue) {
+    const checkElementX = xValue - 1;
+    const checkElementY = yValue;
 
+    const puzzleRowLength = constantObject.puzzleRowLength;
+    if (!(0 <= checkElementX && checkElementX <= puzzleRowLength) || !(0 <= checkElementY && checkElementY <= puzzleRowLength))
+        return false;
+
+    // Now retrieve the element id and check:
+    let checkElement = document.getElementById(`piece_${checkElementX}_${checkElementY}`);
+    
+    if (!checkElement)
+        return false;
+
+    return isTileBlank(checkElement)? [checkElementX, checkElementY] : false;
 }
 
+function canMoveTileRight(tileElement, xValue, yValue) {
+    const checkElementX = xValue + 1;
+    const checkElementY = yValue;
+
+    const puzzleRowLength = constantObject.puzzleRowLength;
+    if (!(0 <= checkElementX && checkElementX <= puzzleRowLength) || !(0 <= checkElementY && checkElementY <= puzzleRowLength))
+        return false;
+
+    // Now retrieve the element id and check:
+    let checkElement = document.getElementById(`piece_${checkElementX}_${checkElementY}`);
+    
+    if (!checkElement)
+        return false;
+
+    return isTileBlank(checkElement)? [checkElementX, checkElementY] : false;
+}
+
+
+function isTileBlank(tileElement) {
+    return (tileElement.style.backgroundImage === `url("${constantObject.emptyPuzzlePiecePath}")`);
+}
 
 
 
@@ -127,38 +269,76 @@ function canMoveTileRight(tile) {
 
 
 function randomizePuzzle() {
-    document.getElement
+    window.alert("randomizePuzzle()");
 }
 
-function applyPuzzleImage() {
+function storeHistoryObject(blankPuzzleElement, puzzleElement) {
+    // Possible tuple is as follows:
+    // { puzzlePiece1-backgroundx, puzzlePiece
+    let historyObject = {
+        "blankPieceX": blankPuzzleElement.style.backgroundPositionX,
+        "blankPieceY": blankPuzzleElement.style.backgroundPositionY,
+        "blankPieceBackgroundSize": blankPuzzleElement.style.backgroundSize,
+        "blankPieceBackgroundImage": blankPuzzleElement.style.backgroundImage,
+
+        "blankElementId": blankPuzzleElement.id,
+        "puzzleElementId": puzzleElement.id,
+        
+        "pieceBackgroundX": puzzleElement.style.backgroundPositionX,
+        "pieceBackgroundY": puzzleElement.style.backgroundPositionY,
+        "pieceBackgroundSize": puzzleElement.style.backgroundSize,
+        "pieceBackgroundImage": puzzleElement.style.backgroundImage
+    };
+
+    puzzleHistoryList.push(historyObject);
+}
+
+
+
+function generatePuzzleImage() {
     let randomImageIndex = inclusiveRandomInt(0, constantObject.puzzleImageList.length);
     let randomImagePath = `${constantObject.rootImagePath}/${constantObject.puzzleImageList[randomImageIndex]}`;
     let puzzleContainerElement = document.getElementById("main-puzzle-container");
 
     // Now for each element in main-puzzle-container, set the background image to be the random image.
-
     const puzzleRowLength = Math.sqrt(constantObject.maxPuzzlePieces);
     const puzzleColumnLength = puzzleRowLength;
 
-    const backgroundPositionHeight = constantObject.puzzleImageHeight / puzzleRowLength;
-    const backgroundPositionWidth = constantObject.puzzleImageWidth / puzzleColumnLength;
+    // Now assign them to the constantObject:
+    constantObject.puzzleColumnLength = puzzleColumnLength;
+    constantObject.puzzleRowLength = puzzleRowLength;
+    
+    // Generate a random pair to place the blank tile in:
+    const randomBlackTileX = inclusiveRandomInt(0, puzzleColumnLength);
+    const randomBlackTileY = inclusiveRandomInt(0, puzzleRowLength);
 
     let xValue = 0;
     let yValue = 0;
     for (let child of puzzleContainerElement.children) {
-        child.style.backgroundImage = `url('${randomImagePath}')`;
-        let backgroundPositionX = -1 * xValue * constantObject.puzzlePieceWidth;
-        let backgroundPositionY = -1 * yValue * constantObject.puzzlePieceHeight;
+        if (xValue === randomBlackTileX && yValue === randomBlackTileY) {
+            child.style.backgroundImage = `url('${constantObject.emptyPuzzlePiecePath}')`;
+            child.style.backgroundSize = 'cover';
+        }
+        else {
+        
+            child.style.backgroundImage = `url('${randomImagePath}')`;
+        
+            // We have to multiple by -1 to do the offset correctly:
+            let backgroundPositionX = -1 * xValue * constantObject.puzzlePieceWidth;
+            let backgroundPositionY = -1 * yValue * constantObject.puzzlePieceHeight;
 
-        child.style.backgroundPositionX = `${backgroundPositionX}px`
-        child.style.backgroundPositionY = `${backgroundPositionY}px`;
-	child.style.backgroundSize = `${constantObject.puzzlePieceWidth * puzzleColumnLength}px`;
+            child.style.backgroundPositionX = `${backgroundPositionX}px`
+            child.style.backgroundPositionY = `${backgroundPositionY}px`;
+            child.style.backgroundSize = `${constantObject.puzzlePieceWidth * puzzleColumnLength}px`;
+        }
+
+        child.id = `piece_${xValue}_${yValue}`;
+        child.onclick = function() { moveTile(child); }
         
         xValue += 1;
         
         if (xValue % puzzleColumnLength === 0) {
-            xValue = 0;
-            ++yValue;
+            xValue = 0; ++yValue;
         }
     }
     
@@ -167,7 +347,9 @@ function applyPuzzleImage() {
 
 function startGame() {
     // window.alert("Start the Game!");
-    applyPuzzleImage();
+    // Before anything, clear the History list:
+    clearPuzzleHistory();
+    generatePuzzleImage();
     
 
 }
