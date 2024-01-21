@@ -58,7 +58,7 @@ const constantObject = {
     
 };
 
-
+let copiedPuzzleContainerCollection = {};
 let puzzleHistoryList = [];
 
 
@@ -75,13 +75,10 @@ function inclusiveRandomInt(min, max) {
 }
 
 
-function clearPuzzleHistory() {
-    puzzleHistoryList.length = 0;
-}
-
 //------------------------------------------------------------------------------
 // Sliding Puzzle Section
 //------------------------------------------------------------------------------
+
 
 function changeDifficulty() {
     window.alert("Change Difficulty!");
@@ -101,11 +98,38 @@ function SetPuzzleSize() {
 }
 
 
+//--------------------------------------
+// Puzzle History Section
+//--------------------------------------
+
+function clearPuzzleHistory() {
+    puzzleHistoryList.length = 0;
+}
+
+function storeHistoryObject(blankPuzzleElement, puzzleElement) {
+    // Possible tuple is as follows:
+    // { puzzlePiece1-backgroundx, puzzlePiece
+    let historyObject = {
+        "blankPieceX": blankPuzzleElement.style.backgroundPositionX,
+        "blankPieceY": blankPuzzleElement.style.backgroundPositionY,
+        "blankPieceBackgroundSize": blankPuzzleElement.style.backgroundSize,
+        "blankPieceBackgroundImage": blankPuzzleElement.style.backgroundImage,
+
+        "blankElementId": blankPuzzleElement.id,
+        "puzzleElementId": puzzleElement.id,
+        
+        "pieceBackgroundX": puzzleElement.style.backgroundPositionX,
+        "pieceBackgroundY": puzzleElement.style.backgroundPositionY,
+        "pieceBackgroundSize": puzzleElement.style.backgroundSize,
+        "pieceBackgroundImage": puzzleElement.style.backgroundImage
+    };
+
+    puzzleHistoryList.push(historyObject);
+}
 
 //--------------------------------------
-// Tile Movement 
+// Tile Movement Section
 //--------------------------------------
-
 
 function moveTile(child) {
     const currentElement = child;
@@ -192,57 +216,32 @@ function canMoveTileUp(tileElement, xValue, yValue) {
     const checkElementX = xValue;
     const checkElementY = yValue - 1;
 
-    const puzzleRowLength = constantObject.puzzleRowLength;
-    if (!(0 <= checkElementX && checkElementX <= puzzleRowLength) || !(0 <= checkElementY && checkElementY <= puzzleRowLength))
-        return false;
-
-    // Now retrieve the element id and check:
-    let checkElement = document.getElementById(`piece_${checkElementX}_${checkElementY}`);
-    
-    if (!checkElement)
-        return false;
-
-    return isTileBlank(checkElement)? [checkElementX, checkElementY] : false;
+    return genericCanMoveCheck(checkElementX, checkElementY);
 }
 
 function canMoveTileDown(tileElement, xValue, yValue) {
     const checkElementX = xValue;
     const checkElementY = yValue + 1;
 
-    const puzzleRowLength = constantObject.puzzleRowLength;
-    if (!(0 <= checkElementX && checkElementX <= puzzleRowLength) || !(0 <= checkElementY && checkElementY <= puzzleRowLength))
-        return false;
-
-    // Now retrieve the element id and check:
-    let checkElement = document.getElementById(`piece_${checkElementX}_${checkElementY}`);
-    
-    if (!checkElement)
-        return false;
-
-    return isTileBlank(checkElement)? [checkElementX, checkElementY] : false;
+    return genericCanMoveCheck(checkElementX, checkElementY);
 }
 
 function canMoveTileLeft(tileElement, xValue, yValue) {
     const checkElementX = xValue - 1;
     const checkElementY = yValue;
 
-    const puzzleRowLength = constantObject.puzzleRowLength;
-    if (!(0 <= checkElementX && checkElementX <= puzzleRowLength) || !(0 <= checkElementY && checkElementY <= puzzleRowLength))
-        return false;
-
-    // Now retrieve the element id and check:
-    let checkElement = document.getElementById(`piece_${checkElementX}_${checkElementY}`);
-    
-    if (!checkElement)
-        return false;
-
-    return isTileBlank(checkElement)? [checkElementX, checkElementY] : false;
+    return genericCanMoveCheck(checkElementX, checkElementY);
 }
 
 function canMoveTileRight(tileElement, xValue, yValue) {
     const checkElementX = xValue + 1;
     const checkElementY = yValue;
+    
+    return genericCanMoveCheck(checkElementX, checkElementY);
+}
 
+
+function genericCanMoveCheck(checkElementX, checkElementY) {
     const puzzleRowLength = constantObject.puzzleRowLength;
     if (!(0 <= checkElementX && checkElementX <= puzzleRowLength) || !(0 <= checkElementY && checkElementY <= puzzleRowLength))
         return false;
@@ -261,37 +260,37 @@ function isTileBlank(tileElement) {
     return (tileElement.style.backgroundImage === `url("${constantObject.emptyPuzzlePiecePath}")`);
 }
 
+//--------------------------------------
+// Winning Condition Section
+//--------------------------------------
+
+function checkIfGameIsWon() {
+    const currentPuzzleContainerList = document.getElementById("main-puzzle-container").children;
+    
+    if (currentPuzzleContainerList.length !== copiedPuzzleContainerCollection.length)
+	return false;
+    
+    // Now check if each item is the same 
+    let index = 0;
+
+    for (let puzzleChild of currentPuzzleContainerList) {
+	if (puzzleChild !== copiedPuzzleContainerCollection.item(index++))
+	    return false;
+    }
+    
+    // If all's well, sound the bell and end the game:
+    window.alert("You have won the game! Reloading the page")
+    window.location.reload();
+
+}
 
 
-//--------------------------------------
-//
-//--------------------------------------
 
 
 function randomizePuzzle() {
     window.alert("randomizePuzzle()");
 }
 
-function storeHistoryObject(blankPuzzleElement, puzzleElement) {
-    // Possible tuple is as follows:
-    // { puzzlePiece1-backgroundx, puzzlePiece
-    let historyObject = {
-        "blankPieceX": blankPuzzleElement.style.backgroundPositionX,
-        "blankPieceY": blankPuzzleElement.style.backgroundPositionY,
-        "blankPieceBackgroundSize": blankPuzzleElement.style.backgroundSize,
-        "blankPieceBackgroundImage": blankPuzzleElement.style.backgroundImage,
-
-        "blankElementId": blankPuzzleElement.id,
-        "puzzleElementId": puzzleElement.id,
-        
-        "pieceBackgroundX": puzzleElement.style.backgroundPositionX,
-        "pieceBackgroundY": puzzleElement.style.backgroundPositionY,
-        "pieceBackgroundSize": puzzleElement.style.backgroundSize,
-        "pieceBackgroundImage": puzzleElement.style.backgroundImage
-    };
-
-    puzzleHistoryList.push(historyObject);
-}
 
 
 
@@ -323,7 +322,7 @@ function generatePuzzleImage() {
         
             child.style.backgroundImage = `url('${randomImagePath}')`;
         
-            // We have to multiple by -1 to do the offset correctly:
+            // We have to multiply by -1 to do the offset correctly:
             let backgroundPositionX = -1 * xValue * constantObject.puzzlePieceWidth;
             let backgroundPositionY = -1 * yValue * constantObject.puzzlePieceHeight;
 
@@ -341,13 +340,16 @@ function generatePuzzleImage() {
             xValue = 0; ++yValue;
         }
     }
+
+    // Now make a copy of the collection to check if the game will be won:
+    copiedPuzzleContainerCollection = structuredClone(puzzleContainerElement.children);
     
 }
 
 
 function startGame() {
     // window.alert("Start the Game!");
-    // Before anything, clear the History list:
+    // Before anything, clear the history list:
     clearPuzzleHistory();
     generatePuzzleImage();
     
