@@ -198,13 +198,13 @@ function findBlankTile(tileElement, xValue, yValue) {
     // Leave this undefined:
     let blankTileCoordinateList;
         
-    if ((blankTileCoordinateList = canMoveTileUp(tileElement, xValue, yValue)))
+    if ((blankTileCoordinateList = canMoveTileUp(xValue, yValue)))
         ;
-    else if ((blankTileCoordinateList = canMoveTileDown(tileElement, xValue, yValue)))
+    else if ((blankTileCoordinateList = canMoveTileDown(xValue, yValue)))
         ;
-    else if ((blankTileCoordinateList = canMoveTileLeft(tileElement, xValue, yValue)))
+    else if ((blankTileCoordinateList = canMoveTileLeft(xValue, yValue)))
         ;
-    else if ((blankTileCoordinateList = canMoveTileRight(tileElement, xValue, yValue)))
+    else if ((blankTileCoordinateList = canMoveTileRight(xValue, yValue)))
         ;
     else
         blankTileCoordinateList = [-1, -1];
@@ -212,28 +212,28 @@ function findBlankTile(tileElement, xValue, yValue) {
     return document.getElementById(`piece_${blankTileCoordinateList[0]}_${blankTileCoordinateList[1]}`);
 }
 
-function canMoveTileUp(tileElement, xValue, yValue) {
+function canMoveTileUp(xValue, yValue) {
     const checkElementX = xValue;
     const checkElementY = yValue - 1;
 
     return genericCanMoveCheck(checkElementX, checkElementY);
 }
 
-function canMoveTileDown(tileElement, xValue, yValue) {
+function canMoveTileDown(xValue, yValue) {
     const checkElementX = xValue;
     const checkElementY = yValue + 1;
 
     return genericCanMoveCheck(checkElementX, checkElementY);
 }
 
-function canMoveTileLeft(tileElement, xValue, yValue) {
+function canMoveTileLeft(xValue, yValue) {
     const checkElementX = xValue - 1;
     const checkElementY = yValue;
 
     return genericCanMoveCheck(checkElementX, checkElementY);
 }
 
-function canMoveTileRight(tileElement, xValue, yValue) {
+function canMoveTileRight(xValue, yValue) {
     const checkElementX = xValue + 1;
     const checkElementY = yValue;
     
@@ -349,7 +349,7 @@ function generatePuzzleImage() {
 
 function startGame() {
     // window.alert("Start the Game!");
-    // Before anything, clear the history list:
+    // Before anything, clear the hstory list:
     clearPuzzleHistory();
     generatePuzzleImage();
     
