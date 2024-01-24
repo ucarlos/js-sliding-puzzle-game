@@ -42,7 +42,8 @@ const constantObject = {
     "puzzlePieceWidth": 150,
     "puzzlePieceHeight": 150,
 
-
+    "startTime": -1,
+    "endTime": -1,
     
     // Corresponds to a 4 x 4 Puzzle; 3x3 and 5x5 Puzzles are also possible.
     "maxPuzzlePieces": 16,
@@ -52,13 +53,11 @@ const constantObject = {
         "normal": 35,
         "hard": 65,
         "insane": 150,
-        "god": 300      
+        "god": 300
     }
-    
-    
 };
 
-let copiedPuzzleContainerCollection = {};
+let copiedPuzzleContainer = [];
 let puzzleHistoryList = [];
 
 
@@ -72,6 +71,20 @@ function inclusiveRandomInt(min, max) {
     max = Math.floor(max);
 
     return Math.floor((Math.random() * (max - min)) + min);
+}
+
+
+function clearCopiedPuzzleContainer() {
+    copiedPuzzleContainer.length = 0;
+}
+
+function clearPuzzleHistory() {
+    puzzleHistoryList.length = 0;
+}
+
+function resetPuzzleStopwatch() {
+    constantObject.startTime = new Date();
+    constantObject.endTime = null;
 }
 
 
@@ -102,13 +115,8 @@ function SetPuzzleSize() {
 // Puzzle History Section
 //--------------------------------------
 
-function clearPuzzleHistory() {
-    puzzleHistoryList.length = 0;
-}
-
 function storeHistoryObject(blankPuzzleElement, puzzleElement) {
     // Possible tuple is as follows:
-    // { puzzlePiece1-backgroundx, puzzlePiece
     let historyObject = {
         "blankPieceX": blankPuzzleElement.style.backgroundPositionX,
         "blankPieceY": blankPuzzleElement.style.backgroundPositionY,
@@ -158,9 +166,20 @@ function moveTile(child) {
 
     // now check if there any blank tiles around:
 
-    const blankElement = findBlankTile(currentElement, xValue, yValue);
+    const blankElement = findBlankTile(xValue, yValue);
     if (blankElement) {
         swapTileElementWithBlankTile(currentElement, blankElement);
+        
+        if (checkIfGameIsWon()) {
+            // If all's well, sound the bell and end the game:
+            constantObject.endTime = new Date();
+            const puzzleTimeElpased = (constantObject.endTime.getTime() - constantObject.startTime.getTime()) / 1000;
+            const puzzleTimeMessage = (puzzleTimeElpased === 1)? `You have won the game in a single second... Cheater.`
+                  : `You won the game in ${puzzleTimeElpased} seconds! I'll now reload the page for a new puzzle!`;
+            
+            window.alert(puzzleTimeMessage);
+            window.location.reload();
+        }
     }
 }
 
@@ -194,7 +213,7 @@ function swapTileElementWithBlankTile(currentElement, blankElement) {
 }
 
 
-function findBlankTile(tileElement, xValue, yValue) {   
+function findBlankTile(xValue, yValue) {
     // Leave this undefined:
     let blankTileCoordinateList;
         
@@ -267,32 +286,40 @@ function isTileBlank(tileElement) {
 function checkIfGameIsWon() {
     const currentPuzzleContainerList = document.getElementById("main-puzzle-container").children;
     
-    if (currentPuzzleContainerList.length !== copiedPuzzleContainerCollection.length)
-	return false;
+    if (currentPuzzleContainerList.length !== copiedPuzzleContainer.length)
+        return false;
     
     // Now check if each item is the same 
     let index = 0;
 
     for (let puzzleChild of currentPuzzleContainerList) {
-	if (puzzleChild !== copiedPuzzleContainerCollection.item(index++))
-	    return false;
+        if (!arePuzzlePiecesEqual(puzzleChild, copiedPuzzleContainer[index++]))
+            return false;
     }
     
-    // If all's well, sound the bell and end the game:
-    window.alert("You have won the game! Reloading the page")
-    window.location.reload();
+    return true;
+
+}
+
+function arePuzzlePiecesEqual(puzzlePieceElement, copiedPuzzlePiece) {
+    if (puzzlePieceElement.style.backgroundImage !== copiedPuzzlePiece.backgroundImage)
+        return false;
+    else if (puzzlePieceElement.style.backgroundPositionX !== copiedPuzzlePiece.backgroundPositionX)
+        return false;
+    else if (puzzlePieceElement.style.backgroundPositionY !== copiedPuzzlePiece.backgroundPositionY)
+        return false;
+    else if (puzzlePieceElement.style.backgroundSize !== copiedPuzzlePiece.backgroundSize)
+        return false;
+    
+    return true;
 
 }
 
 
 
-
-function randomizePuzzle() {
-    window.alert("randomizePuzzle()");
-}
-
-
-
+//--------------------------------------
+// Puzzle Generation Section
+//--------------------------------------
 
 function generatePuzzleImage() {
     let randomImageIndex = inclusiveRandomInt(0, constantObject.puzzleImageList.length);
@@ -339,10 +366,44 @@ function generatePuzzleImage() {
         if (xValue % puzzleColumnLength === 0) {
             xValue = 0; ++yValue;
         }
+
+        // Create a copy of the background image, position:
+        let copiedChildOject = {
+            backgroundImage: child.style.backgroundImage,
+            backgroundPositionX: child.style.backgroundPositionX,
+            backgroundPositionY: child.style.backgroundPositionY,
+            backgroundSize: child.style.backgroundSize
+        };
+        
+        copiedPuzzleContainer.push(copiedChildOject);
+    }
+}
+
+/**
+ * Shuffle the list of puzzle images by using a modified Fisher-Yates shuffle
+ * (Shamelessly taken from https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle)
+ */
+function shufflePuzzleImage() {
+    let tempPuzzleContainer = JSON.parse(JSON.stringify(copiedPuzzleContainer));
+
+    for (let index = tempPuzzleContainer.length - 1; index >= 0; index--) {
+        const randomIndex = inclusiveRandomInt(0, index);
+        let temp = tempPuzzleContainer[index];
+        tempPuzzleContainer[index] = tempPuzzleContainer[randomIndex];
+        tempPuzzleContainer[randomIndex] = temp;        
     }
 
-    // Now make a copy of the collection to check if the game will be won:
-    copiedPuzzleContainerCollection = structuredClone(puzzleContainerElement.children);
+    // Now apply the changes to each object:
+
+    const puzzleContainerElement = document.getElementById("main-puzzle-container");
+    let index = 0;
+    for (let puzzlePiece of puzzleContainerElement.children) {
+        puzzlePiece.style.backgroundImage = tempPuzzleContainer[index].backgroundImage;
+        puzzlePiece.style.backgroundPositionX = tempPuzzleContainer[index].backgroundPositionX;
+        puzzlePiece.style.backgroundPositionY =  tempPuzzleContainer[index].backgroundPositionY;
+        puzzlePiece.style.backgroundSize = tempPuzzleContainer[index].backgroundSize;
+	index++;
+    }
     
 }
 
@@ -351,7 +412,9 @@ function startGame() {
     // window.alert("Start the Game!");
     // Before anything, clear the hstory list:
     clearPuzzleHistory();
+    resetPuzzleStopwatch();    
     generatePuzzleImage();
+    setTimeout(shufflePuzzleImage, 0);
     
 
 }
