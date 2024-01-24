@@ -54,11 +54,14 @@ const constantObject = {
         "hard": 65,
         "insane": 150,
         "god": 300
-    }
+    },
+    
+    "blankCoordinates": [-1, -1]
 };
 
 let copiedPuzzleContainer = [];
 let puzzleHistoryList = [];
+let currentDifficulty = constantObject.difficultyLevel["normal"];
 
 
 
@@ -88,6 +91,11 @@ function resetPuzzleStopwatch() {
 }
 
 
+function isTileCoordinateInPuzzle(xValue, yValue) {
+    return ((0 <= xValue && xValue < constantObject.puzzleColumnLength) && (0 <= yValue && yValue < constantObject.puzzleRowLength));
+
+}
+
 //------------------------------------------------------------------------------
 // Sliding Puzzle Section
 //------------------------------------------------------------------------------
@@ -101,8 +109,34 @@ function changeDifficulty() {
 // Puzzle Solver Section
 //--------------------------------------
 
-function solveGame() {
-    window.alert("Solve the Puzzle for Me!");
+async function solveGame() {
+    // Next, simply go through the history element and swap back the items
+    if (puzzleHistoryList.length === 0) {
+	window.alert("No puzzle has been initialized yet!");
+	return;
+    }
+
+    for (let index = puzzleHistoryList.length - 1; index >= 0; index--) {
+	// Grab the previous index
+	let originalblankElementId = puzzleHistoryList[index].blankElementId;
+	let currentBlankElementId = puzzleHistoryList[index].puzzleElementId;
+
+	// Now create the two elements
+
+	// The 
+	let originalBlankElement = document.getElementById(originalblankElementId);
+	
+	// The puzzleElement is actually the original place where the blank element was:
+	let currentBlankElement = document.getElementById(currentBlankElementId);
+
+	swapTileElementWithBlankTile(originalBlankElement, currentBlankElement);
+	// Method to sleep:
+	await new Promise(r => setTimeout(r, 500));
+	
+    }
+    
+    window.alert("I solved the game for you, so why won't you try again?");
+    window.location.reload();
 }
 
 
@@ -184,10 +218,11 @@ function moveTile(child) {
 }
 
 
-function swapTileElementWithBlankTile(currentElement, blankElement) {
+function swapTileElementWithBlankTile(currentElement, blankElement, checkForBlankElements = true) {
     // Bail if the blankElement is NOT blank. This shouldn't happen, but it might:
-    if (!isTileBlank(blankElement)) {
-        console.log(`swapTileElementWithBlankTile(): blankElement ${blankElement} is NOT BLANK! I'm getting out of here!`);
+    if (!isTileBlank(blankElement) && checkForBlankElements) {
+        console.log(`swapTileElementWithBlankTile(): I tried to swap ${currentElement.id} with `
+                    + `blankElement ${blankElement.id} but it's NOT BLANK! I'm getting out of here!`);
         return;
     }
 
@@ -322,6 +357,13 @@ function arePuzzlePiecesEqual(puzzlePieceElement, copiedPuzzlePiece) {
 //--------------------------------------
 
 function generatePuzzleImage() {
+    // First things first: Clear the puzzle history, the puzzle container used to check for the correct puzzle
+    // and reset the stopwatch:
+    clearPuzzleHistory();
+    clearCopiedPuzzleContainer();
+    resetPuzzleStopwatch(); 
+
+    
     let randomImageIndex = inclusiveRandomInt(0, constantObject.puzzleImageList.length);
     let randomImagePath = `${constantObject.rootImagePath}/${constantObject.puzzleImageList[randomImageIndex]}`;
     let puzzleContainerElement = document.getElementById("main-puzzle-container");
@@ -335,15 +377,17 @@ function generatePuzzleImage() {
     constantObject.puzzleRowLength = puzzleRowLength;
     
     // Generate a random pair to place the blank tile in:
-    const randomBlackTileX = inclusiveRandomInt(0, puzzleColumnLength);
-    const randomBlackTileY = inclusiveRandomInt(0, puzzleRowLength);
+    const randomBlankTileX = inclusiveRandomInt(0, puzzleColumnLength);
+    const randomBlankTileY = inclusiveRandomInt(0, puzzleRowLength);
 
     let xValue = 0;
     let yValue = 0;
     for (let child of puzzleContainerElement.children) {
-        if (xValue === randomBlackTileX && yValue === randomBlackTileY) {
+        if (xValue === randomBlankTileX && yValue === randomBlankTileY) {
             child.style.backgroundImage = `url('${constantObject.emptyPuzzlePiecePath}')`;
             child.style.backgroundSize = 'cover';
+            constantObject.blankCoordinates[0] = randomBlankTileX;
+            constantObject.blankCoordinates[1] = randomBlankTileY;
         }
         else {
         
@@ -379,42 +423,78 @@ function generatePuzzleImage() {
     }
 }
 
-/**
- * Shuffle the list of puzzle images by using a modified Fisher-Yates shuffle
- * (Shamelessly taken from https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle)
- */
-function shufflePuzzleImage() {
-    let tempPuzzleContainer = JSON.parse(JSON.stringify(copiedPuzzleContainer));
 
-    for (let index = tempPuzzleContainer.length - 1; index >= 0; index--) {
-        const randomIndex = inclusiveRandomInt(0, index);
-        let temp = tempPuzzleContainer[index];
-        tempPuzzleContainer[index] = tempPuzzleContainer[randomIndex];
-        tempPuzzleContainer[randomIndex] = temp;        
+//--------------------------------------
+// Puzzle Shuffling Section
+//--------------------------------------
+
+function generateRandomDirectionCoordinates(randomDirection, xValue, yValue) {
+    switch(randomDirection) {
+    case 1: // Up
+        return [xValue, yValue - 1];
+    case 2: // Down
+        return [xValue, yValue + 1];
+    case 3: // Left
+        return [xValue - 1, yValue];
+    case 4:
+        return [xValue + 1, yValue];
     }
+}
 
-    // Now apply the changes to each object:
+function isRandomMoveValid(randomCoordinates) {
+    if (!isTileCoordinateInPuzzle(randomCoordinates[0], randomCoordinates[1]))
+	return false;
 
-    const puzzleContainerElement = document.getElementById("main-puzzle-container");
-    let index = 0;
-    for (let puzzlePiece of puzzleContainerElement.children) {
-        puzzlePiece.style.backgroundImage = tempPuzzleContainer[index].backgroundImage;
-        puzzlePiece.style.backgroundPositionX = tempPuzzleContainer[index].backgroundPositionX;
-        puzzlePiece.style.backgroundPositionY =  tempPuzzleContainer[index].backgroundPositionY;
-        puzzlePiece.style.backgroundSize = tempPuzzleContainer[index].backgroundSize;
-	index++;
-    }
+    // Next, check if the previous move is an inverse of the current move
+    // (i.e, are we moving up when we moved down the previous move?
+    // If so, return false so that we can move in a different direction.
+    return true;
+}
+
+function randomMove(tempBlankCoordinates) {
+    const maxCoodinateRandomCount = 10;
+    const numberOfDirections = 4;
     
+    let xValue = tempBlankCoordinates[0];
+    let yValue = tempBlankCoordinates[1];
+    for (let randomCount = 0; randomCount < maxCoodinateRandomCount; randomCount++) {
+        let randomDirection = inclusiveRandomInt(1, numberOfDirections);
+        const randomCoordinates = generateRandomDirectionCoordinates(randomDirection, xValue, yValue);
+
+        // If the coordinates fall in the given range, swap automatically. Otherwise, redo.
+        if (!isRandomMoveValid(randomCoordinates))
+            continue;
+        else
+            return randomCoordinates;
+    }
+
+    // If that fails, return the default:
+    return tempBlankCoordinates;
+    
+
+}
+
+function shufflePuzzleImage() {    
+    let tempBlankCoordinates = constantObject.blankCoordinates;
+    let tempBlankElement = document.getElementById(`piece_${tempBlankCoordinates[0]}_${tempBlankCoordinates[1]}`);
+    
+    for (let moveIndex = 0; moveIndex < currentDifficulty; moveIndex++) {       
+        let newBlankCoordinates = randomMove(tempBlankCoordinates);
+        let newTileElement = document.getElementById(`piece_${newBlankCoordinates[0]}_${newBlankCoordinates[1]}`);
+        if (newTileElement) {
+            swapTileElementWithBlankTile(newTileElement,tempBlankElement);
+            tempBlankCoordinates = newBlankCoordinates;
+            tempBlankElement = document.getElementById(`piece_${tempBlankCoordinates[0]}_${tempBlankCoordinates[1]}`);
+        }
+    }    
 }
 
 
-function startGame() {
-    // window.alert("Start the Game!");
-    // Before anything, clear the hstory list:
-    clearPuzzleHistory();
-    resetPuzzleStopwatch();    
-    generatePuzzleImage();
-    setTimeout(shufflePuzzleImage, 0);
-    
+//------------------------------------------------------------------------------
+// Main Function:
+//------------------------------------------------------------------------------
 
+function startGame() { 
+    generatePuzzleImage();
+    setTimeout(shufflePuzzleImage, 3000);   
 }
