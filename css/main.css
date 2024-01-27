@@ -55,10 +55,15 @@ buttton {
     text-align: center;
 }
 
-div.button-container  button#puzzle-size-button {
-    grid-column: 2;
-    margin-top: 10px;
-    font-weight: bolder;
+div.radio-button-container {
+    display: grid;
+    font-family: helvetica;
+    font-weight: bold;
+    grid-template-columns: 1fr 1fr 1fr;
+    margin: auto;
+    padding-top: 10px;
+    text-align: center;
+    width: 580px;
 }
 
 audio.music-player {

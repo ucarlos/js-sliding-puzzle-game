@@ -116,11 +116,11 @@ function clearPuzzleContainer() {
         puzzlePiece.style.backgroundPositionX = "";
         puzzlePiece.style.backgroundPositionY = "";
         puzzlePiece.style.backgroundSize = "";
-	puzzlePiece.onclick = "";        
+        puzzlePiece.onclick = "";        
     }
 
     if (constantObject.startTime != -1)
-	constantObject.startTime = -1;
+        constantObject.startTime = -1;
     
 }
 
@@ -162,6 +162,7 @@ function appendPuzzleElementsToContainer(elementNumber) {
     for (let index = 0; index < elementNumber; index++) {
         let divContainer = document.createElement("div");
         divContainer.setAttribute("class", "main-puzzle-container puzzle-piece");
+	divContainer.style.backgroundImage = `url("${constantObject.blankImagePath}")`;
         mainPuzzleContainerElement.append(divContainer);
     }    
 }
@@ -170,13 +171,13 @@ function appendPuzzleElementsToContainer(elementNumber) {
 async function disablePuzzleSizeRadioButtons() {
     let radioButtonList = document.getElementsByName("puzzle-size");
     for (let radioButton of radioButtonList)
-	radioButton.disabled = true;    
+        radioButton.disabled = true;    
 }
 
 async function enablePuzzleSizeRadioButtons() {
     let radioButtonList = document.getElementsByName("puzzle-size");
     for (let radioButton of radioButtonList)
-	radioButton.disabled = false;
+        radioButton.disabled = false;
 }
 
 //------------------------------------------------------------------------------
@@ -263,7 +264,7 @@ function setPuzzleSize(puzzlePieceRowLength) {
 
     let currentRadioButtonElement = document.getElementById(`puzzle_piece_${puzzlePieceRowLength}_${puzzlePieceRowLength}`);
     if (currentRadioButtonElement)
-	currentRadioButtonElement.checked = true;
+        currentRadioButtonElement.checked = true;
 
 }
 
