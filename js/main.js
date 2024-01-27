@@ -44,9 +44,12 @@ const constantObject = {
 
     "startTime": -1,
     "endTime": -1,
+
     
     // Corresponds to a 4 x 4 Puzzle; 3x3 and 5x5 Puzzles are also possible.
-    "maxPuzzlePieces": 16,
+    "minPuzzlePieces": 9,
+    "currentPuzzlePieces": 16,
+    "maxPuzzlePieces": 25,
     "difficultyLevel": {
         "babby" : 5,
         "easy": 15,
@@ -96,6 +99,86 @@ function isTileCoordinateInPuzzle(xValue, yValue) {
 
 }
 
+function generateDynamicGridTemplate(PuzzlePieceRowLength) {
+    let gridTemplateString = "";
+    for (let i = 0; i < PuzzlePieceRowLength; i++)
+        gridTemplateString += `${constantObject.puzzlePieceWidth}px `;
+    
+    return gridTemplateString;
+}
+
+function clearPuzzleContainer() {
+    let mainPuzzleContainerElement = document.getElementById("main-puzzle-container");
+
+    for (let puzzlePiece of mainPuzzleContainerElement.children) {
+        puzzlePiece.id = "";
+        puzzlePiece.style.backgroundImage = `url("${constantObject.blankImagePath}")`;
+        puzzlePiece.style.backgroundPositionX = "";
+        puzzlePiece.style.backgroundPositionY = "";
+        puzzlePiece.style.backgroundSize = "";
+	puzzlePiece.onclick = "";        
+    }
+
+    if (constantObject.startTime != -1)
+	constantObject.startTime = -1;
+    
+}
+
+
+function removePuzzleElementsFromContainer(elementNumber) {
+    if (elementNumber === 0)
+        return;
+
+    // First things first: clear any ids from the existing elements:
+    clearPuzzleContainer();
+   
+    let mainPuzzleContainerElement = document.getElementById("main-puzzle-container");
+
+    if (elementNumber >= constantObject.currentPuzzlePieces)
+        mainPuzzleContainerElement.replaceChildren();
+    else {
+        // Remove from the end of the list:
+        let childrenLength = mainPuzzleContainerElement.children.length;
+        for (let index = 0; index < elementNumber; index++) {
+            mainPuzzleContainerElement.children.item(childrenLength - 1 - index).remove();
+        }       
+    }    
+}
+
+
+function appendPuzzleElementsToContainer(elementNumber) {    
+    if (elementNumber === 0)
+        return;
+
+    // Prevent adding a shitload of puzzle pieces
+    if ((elementNumber + constantObject.currentPuzzlePieces) > constantObject.maxPuzzlePieces)
+        return;
+    
+    // First things first: clear any ids from the existing elements:
+    clearPuzzleContainer();
+    
+    let mainPuzzleContainerElement = document.getElementById("main-puzzle-container");
+
+    for (let index = 0; index < elementNumber; index++) {
+        let divContainer = document.createElement("div");
+        divContainer.setAttribute("class", "main-puzzle-container puzzle-piece");
+        mainPuzzleContainerElement.append(divContainer);
+    }    
+}
+
+
+async function disablePuzzleSizeRadioButtons() {
+    let radioButtonList = document.getElementsByName("puzzle-size");
+    for (let radioButton of radioButtonList)
+	radioButton.disabled = true;    
+}
+
+async function enablePuzzleSizeRadioButtons() {
+    let radioButtonList = document.getElementsByName("puzzle-size");
+    for (let radioButton of radioButtonList)
+	radioButton.disabled = false;
+}
+
 //------------------------------------------------------------------------------
 // Sliding Puzzle Section
 //------------------------------------------------------------------------------
@@ -110,29 +193,29 @@ function changeDifficulty() {
 //--------------------------------------
 
 async function solveGame() {
+    const milisecondSleep = 500;
     // Next, simply go through the history element and swap back the items
     if (puzzleHistoryList.length === 0) {
-	window.alert("No puzzle has been initialized yet!");
-	return;
+        window.alert("No puzzle has been initialized yet!");
+        return;
     }
 
     for (let index = puzzleHistoryList.length - 1; index >= 0; index--) {
-	// Grab the previous index
-	let originalblankElementId = puzzleHistoryList[index].blankElementId;
-	let currentBlankElementId = puzzleHistoryList[index].puzzleElementId;
+        // Grab the previous index
+        let originalblankElementId = puzzleHistoryList[index].blankElementId;
+        let currentBlankElementId = puzzleHistoryList[index].puzzleElementId;
 
-	// Now create the two elements
+        // Now create the two elements
 
-	// The 
-	let originalBlankElement = document.getElementById(originalblankElementId);
-	
-	// The puzzleElement is actually the original place where the blank element was:
-	let currentBlankElement = document.getElementById(currentBlankElementId);
+        // The 
+        let originalBlankElement = document.getElementById(originalblankElementId);
+        
+        // The puzzleElement is actually the original place where the blank element was:
+        let currentBlankElement = document.getElementById(currentBlankElementId);
 
-	swapTileElementWithBlankTile(originalBlankElement, currentBlankElement);
-	// Method to sleep:
-	await new Promise(r => setTimeout(r, 500));
-	
+        swapTileElementWithBlankTile(originalBlankElement, currentBlankElement);
+        // Method to sleep:
+        await new Promise(r => setTimeout(r, milisecondSleep)); 
     }
     
     window.alert("I solved the game for you, so why won't you try again?");
@@ -140,10 +223,49 @@ async function solveGame() {
 }
 
 
-function SetPuzzleSize() {
+//--------------------------------------
+// Dynamic Puzzle Size Section
+//--------------------------------------
+
+
+function setPuzzleSize(puzzlePieceRowLength) {
+    // First, set the current number of puzzles:
+    const numberOfPieces = puzzlePieceRowLength * puzzlePieceRowLength;
+
+    // If the size is already the same as the passed argument or if it's out of bounds, abort.
+    if (numberOfPieces === constantObject.currentPuzzlePieces)
+        return;
+    
+    if ((!(constantObject.minPuzzlePieces <= numberOfPieces && numberOfPieces <= constantObject.maxPuzzlePieces)))
+        return;
+
+    // Now, modify the size of the puzzle table, and then draw it anew.
+    const rowLengthInPixels = constantObject.puzzlePieceWidth * puzzlePieceRowLength;
+    // Now modify the width and height of the main puzzle container:
+    let mainPuzzleContainerElement = document.getElementById("main-puzzle-container");
+    
+    // Increase the width:
+    mainPuzzleContainerElement.style.width = `${rowLengthInPixels}px`;
+    mainPuzzleContainerElement.style.height = `${rowLengthInPixels}px`;
+    
+    mainPuzzleContainerElement.style.gridTemplateColumns = generateDynamicGridTemplate(puzzlePieceRowLength);    
+    mainPuzzleContainerElement.style.gridTemplateRows = generateDynamicGridTemplate(puzzlePieceRowLength);
+
+
+    // If the new number of elements is greater than the current, than append new elements to the container:
+    if (numberOfPieces > constantObject.currentPuzzlePieces)
+        appendPuzzleElementsToContainer((numberOfPieces - constantObject.currentPuzzlePieces));
+    else
+        removePuzzleElementsFromContainer((constantObject.currentPuzzlePieces - numberOfPieces));
+
+    // Finally, change the current puzzle piece size and check the appropriate radio button:
+    constantObject.currentPuzzlePieces = numberOfPieces;
+
+    let currentRadioButtonElement = document.getElementById(`puzzle_piece_${puzzlePieceRowLength}_${puzzlePieceRowLength}`);
+    if (currentRadioButtonElement)
+	currentRadioButtonElement.checked = true;
 
 }
-
 
 //--------------------------------------
 // Puzzle History Section
@@ -361,15 +483,14 @@ function generatePuzzleImage() {
     // and reset the stopwatch:
     clearPuzzleHistory();
     clearCopiedPuzzleContainer();
-    resetPuzzleStopwatch(); 
-
+    resetPuzzleStopwatch();
     
     let randomImageIndex = inclusiveRandomInt(0, constantObject.puzzleImageList.length);
     let randomImagePath = `${constantObject.rootImagePath}/${constantObject.puzzleImageList[randomImageIndex]}`;
     let puzzleContainerElement = document.getElementById("main-puzzle-container");
 
     // Now for each element in main-puzzle-container, set the background image to be the random image.
-    const puzzleRowLength = Math.sqrt(constantObject.maxPuzzlePieces);
+    const puzzleRowLength = Math.sqrt(constantObject.currentPuzzlePieces);
     const puzzleColumnLength = puzzleRowLength;
 
     // Now assign them to the constantObject:
@@ -443,7 +564,7 @@ function generateRandomDirectionCoordinates(randomDirection, xValue, yValue) {
 
 function isRandomMoveValid(randomCoordinates) {
     if (!isTileCoordinateInPuzzle(randomCoordinates[0], randomCoordinates[1]))
-	return false;
+        return false;
 
     // Next, check if the previous move is an inverse of the current move
     // (i.e, are we moving up when we moved down the previous move?
@@ -494,7 +615,10 @@ function shufflePuzzleImage() {
 // Main Function:
 //------------------------------------------------------------------------------
 
-function startGame() { 
+function startGame() {
+    disablePuzzleSizeRadioButtons();
     generatePuzzleImage();
-    setTimeout(shufflePuzzleImage, 3000);   
+    setTimeout(enablePuzzleSizeRadioButtons, 3000);
+    setTimeout(shufflePuzzleImage, 3000);
+    
 }

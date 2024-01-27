@@ -1,6 +1,7 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="utf-8">
     <title>Sliding Puzzle Game</title>
     <script src="js/main.js"></script>
     <script defer src="js/audio_player.js"></script>
@@ -35,10 +36,24 @@
       </div>
 
       <div class="button-container">
-          <button id="puzzle-size-button"> Set Puzzle Size!</button>
+        <div>
+          <input type="radio" id="puzzle_size_3x3" name="puzzle-size" value="3" onclick="setPuzzleSize(3)">
+          <label for="puzzle_size_3x3">3x3 Puzzle</label>
+        </div>      
+        <div>
+          <!-- EEEH !-->
+          <input type="radio" id="puzzle_size_4x4" name="puzzle-size" value="4" onclick="setPuzzleSize(4)" checked>
+          <label for="puzzle_size_4x4">4x4 Puzzle</label>
+        </div>
+
+        <div>
+          <input type="radio" id="puzzle_size_5x5" name="puzzle-size" value="5" onclick="setPuzzleSize(5)">
+          <label for="puzzle_size_5x5">5x5 Puzzle</label>
+        </div>
       </div>
 
-      <audio id="music-player" class="music-player" ended="playRandomTrack()">
+      <!-- <audio id="music-player" class="music-player" ended="playRandomTrack()"> -->
+      <audio id="music-player" class="music-player">        
       </audio>
       
       
