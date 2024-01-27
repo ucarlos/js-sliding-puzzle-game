@@ -3,7 +3,7 @@
  * Created by Ulysses Carlos on 01/18/2024 at 10:25 PM
  *
  * main.js
- *
+ * Main JavaScript file for the Sliding Puzzle game.
  * -----------------------------------------------------------------------------
  */
 
@@ -28,7 +28,11 @@ const constantObject = {
         "image09.jpg",
         "image10.jpg",
         "image11.jpg",
-        "image12.jpg"
+        "image12.jpg",
+        "image13.jpg",
+        "image14.jpg",
+        "image15.jpg",
+        "image16.jpg"
     ],
     "blankImagePath": "./images/blank.jpg",
     "emptyPuzzlePiecePath": "./images/emptypiece.jpg",
@@ -64,7 +68,7 @@ const constantObject = {
 
 let copiedPuzzleContainer = [];
 let puzzleHistoryList = [];
-let currentDifficulty = constantObject.difficultyLevel["normal"];
+let currentDifficulty = constantObject.difficultyLevel["insane"];
 
 
 
@@ -119,7 +123,7 @@ function clearPuzzleContainer() {
         puzzlePiece.onclick = "";        
     }
 
-    if (constantObject.startTime != -1)
+    if (constantObject.startTime !== -1)
         constantObject.startTime = -1;
     
 }
@@ -162,7 +166,7 @@ function appendPuzzleElementsToContainer(elementNumber) {
     for (let index = 0; index < elementNumber; index++) {
         let divContainer = document.createElement("div");
         divContainer.setAttribute("class", "main-puzzle-container puzzle-piece");
-	divContainer.style.backgroundImage = `url("${constantObject.blankImagePath}")`;
+        divContainer.style.backgroundImage = `url("${constantObject.blankImagePath}")`;
         mainPuzzleContainerElement.append(divContainer);
     }    
 }
@@ -186,7 +190,11 @@ async function enablePuzzleSizeRadioButtons() {
 
 
 function changeDifficulty() {
-    window.alert("Change Difficulty!");
+    let difficultyLevel = window.prompt("Please select a difficulty level (babby, easy, normal, hard, insane, god)").toLocaleLowerCase();
+    if (Object.hasOwn(constantObject.difficultyLevel, difficultyLevel))
+        currentDifficulty = constantObject.difficultyLevel[difficultyLevel];
+    else
+        window.alert("That difficulty level is NOT in the list. Defaulting to Normal difficulty.");
 }
 
 //--------------------------------------
@@ -484,7 +492,6 @@ function generatePuzzleImage() {
     // and reset the stopwatch:
     clearPuzzleHistory();
     clearCopiedPuzzleContainer();
-    resetPuzzleStopwatch();
     
     let randomImageIndex = inclusiveRandomInt(0, constantObject.puzzleImageList.length);
     let randomImagePath = `${constantObject.rootImagePath}/${constantObject.puzzleImageList[randomImageIndex]}`;
@@ -558,7 +565,7 @@ function generateRandomDirectionCoordinates(randomDirection, xValue, yValue) {
         return [xValue, yValue + 1];
     case 3: // Left
         return [xValue - 1, yValue];
-    case 4:
+    case 4: // Right
         return [xValue + 1, yValue];
     }
 }
@@ -621,5 +628,6 @@ function startGame() {
     generatePuzzleImage();
     setTimeout(enablePuzzleSizeRadioButtons, 3000);
     setTimeout(shufflePuzzleImage, 3000);
+    resetPuzzleStopwatch();    
     
 }
