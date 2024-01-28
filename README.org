@@ -1,0 +1,3 @@
+#+title: JS Sliding Puzzle Game
+#+author: Ulysses Carlos
+#+date: <2024-01-27 Sat>
