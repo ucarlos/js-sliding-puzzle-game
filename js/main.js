@@ -54,7 +54,7 @@ const constantObject = {
     "currentPuzzlePieces": 16,
     "maxPuzzlePieces": 25,
     "difficultyLevel": {
-        "babby" : 5,
+        "baby" : 5,
         "easy": 15,
         "normal": 35,
         "hard": 65,
@@ -189,7 +189,7 @@ async function enablePuzzleSizeRadioButtons() {
 
 
 function changeDifficulty() {
-    let difficultyLevel = window.prompt("Please select a difficulty level (babby, easy, normal, hard, insane, god)").toLocaleLowerCase();
+    let difficultyLevel = window.prompt("Please select a difficulty level (baby, easy, normal, hard, insane, god)").toLocaleLowerCase();
     if (Object.hasOwn(constantObject.difficultyLevel, difficultyLevel))
         currentDifficulty = constantObject.difficultyLevel[difficultyLevel];
     else
@@ -201,7 +201,7 @@ function changeDifficulty() {
 //--------------------------------------
 
 async function solveGame() {
-    const milisecondSleep = 500;
+    const millisecondSleep = 500;
     // Next, simply go through the history element and swap back the items
     if (puzzleHistoryList.length === 0) {
         window.alert("No puzzle has been initialized yet!");
@@ -216,20 +216,20 @@ async function solveGame() {
     
     for (let index = puzzleHistoryList.length - 1; index >= 0; index--) {
         // Grab the previous index
-        let originalblankElementId = puzzleHistoryList[index].blankElementId;
+        let originalBlankElementId = puzzleHistoryList[index].blankElementId;
         let currentBlankElementId = puzzleHistoryList[index].puzzleElementId;
 
         // Now create the two elements
 
         // The 
-        let originalBlankElement = document.getElementById(originalblankElementId);
+        let originalBlankElement = document.getElementById(originalBlankElementId);
         
         // The puzzleElement is actually the original place where the blank element was:
         let currentBlankElement = document.getElementById(currentBlankElementId);
 
         swapTileElementWithBlankTile(originalBlankElement, currentBlankElement);
         // Method to sleep:
-        await new Promise(r => setTimeout(r, milisecondSleep)); 
+        await new Promise(r => setTimeout(r, millisecondSleep));
     }
     
     window.alert("I solved the game for you, so why won't you try again?");
@@ -334,7 +334,7 @@ function moveTile(child) {
     const xValue = Number(coordinateString[0]);
     const yValue = Number(coordinateString[2]);
 
-    // now check if there any blank tiles around:
+    // now check if there are any blank tiles around:
 
     const blankElement = findBlankTile(xValue, yValue);
     if (blankElement) {
@@ -343,9 +343,9 @@ function moveTile(child) {
         if (checkIfGameIsWon()) {
             // If all's well, sound the bell and end the game:
             constantObject.endTime = new Date();
-            const puzzleTimeElpased = (constantObject.endTime.getTime() - constantObject.startTime.getTime()) / 1000;
-            const puzzleTimeMessage = (puzzleTimeElpased === 1)? `You have won the game in a single second... Cheater.`
-                  : `You won the game in ${puzzleTimeElpased} seconds! I'll now reload the page for a new puzzle!`;
+            const puzzleTimeElapsed = (constantObject.endTime.getTime() - constantObject.startTime.getTime()) / 1000;
+            const puzzleTimeMessage = (puzzleTimeElapsed === 1)? `You have won the game in a single second... Cheater.`
+                  : `You won the game in ${puzzleTimeElapsed} seconds! I'll now reload the page for a new puzzle!`;
             
             window.alert(puzzleTimeMessage);
             window.location.reload();
@@ -546,14 +546,14 @@ function generatePuzzleImage() {
         }
 
         // Create a copy of the background image, position:
-        let copiedChildOject = {
+        let copiedChildObject = {
             backgroundImage: child.style.backgroundImage,
             backgroundPositionX: child.style.backgroundPositionX,
             backgroundPositionY: child.style.backgroundPositionY,
             backgroundSize: child.style.backgroundSize
         };
         
-        copiedPuzzleContainer.push(copiedChildOject);
+        copiedPuzzleContainer.push(copiedChildObject);
     }
 }
 
@@ -580,18 +580,18 @@ function isRandomMoveValid(randomCoordinates) {
         return false;
 
     // Next, check if the previous move is an inverse of the current move
-    // (i.e, are we moving up when we moved down the previous move?
+    // (i.e, are we moving up when we moved down the previous move?)
     // If so, return false so that we can move in a different direction.
     return true;
 }
 
 function randomMove(tempBlankCoordinates) {
-    const maxCoodinateRandomCount = 10;
+    const maxCoordinateRandomCount = 10;
     const numberOfDirections = 4;
     
     let xValue = tempBlankCoordinates[0];
     let yValue = tempBlankCoordinates[1];
-    for (let randomCount = 0; randomCount < maxCoodinateRandomCount; randomCount++) {
+    for (let randomCount = 0; randomCount < maxCoordinateRandomCount; randomCount++) {
         let randomDirection = inclusiveRandomInt(1, numberOfDirections);
         const randomCoordinates = generateRandomDirectionCoordinates(randomDirection, xValue, yValue);
 
