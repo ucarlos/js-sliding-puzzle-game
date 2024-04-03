@@ -13,7 +13,7 @@ body {
 
 h1.title {
     text-align: center;
-    font-family: Helvetica;
+    font-family: Helvetica, serif;
 }
 
 div.main-puzzle-container {
@@ -48,14 +48,14 @@ div.button-container {
     width: 580px;
 }
 
-buttton {
+button {
     margin: auto;
     text-align: center;
 }
 
 div.radio-button-container {
     display: grid;
-    font-family: helvetica;
+    font-family: helvetica, serif;
     font-weight: bold;
     grid-template-columns: 1fr 1fr 1fr;
     margin: auto;
