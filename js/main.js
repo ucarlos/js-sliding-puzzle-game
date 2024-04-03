@@ -48,7 +48,6 @@ const constantObject = {
 
     "startTime": -1,
     "endTime": -1,
-
     
     // Corresponds to a 4 x 4 Puzzle; 3x3 and 5x5 Puzzles are also possible.
     "minPuzzlePieces": 9,
@@ -209,6 +208,12 @@ async function solveGame() {
         return;
     }
 
+    // remove the onclick event for each element:
+    let mainPuzzleContainerElement = document.getElementById("main-puzzle-container");
+    for (let element of mainPuzzleContainerElement.children) {
+        element.onclick = "";
+    }
+    
     for (let index = puzzleHistoryList.length - 1; index >= 0; index--) {
         // Grab the previous index
         let originalblankElementId = puzzleHistoryList[index].blankElementId;
@@ -283,18 +288,18 @@ function setPuzzleSize(puzzlePieceRowLength) {
 function storeHistoryObject(blankPuzzleElement, puzzleElement) {
     // Possible tuple is as follows:
     let historyObject = {
-        "blankPieceX": blankPuzzleElement.style.backgroundPositionX,
-        "blankPieceY": blankPuzzleElement.style.backgroundPositionY,
-        "blankPieceBackgroundSize": blankPuzzleElement.style.backgroundSize,
-        "blankPieceBackgroundImage": blankPuzzleElement.style.backgroundImage,
+        // "blankPieceX": blankPuzzleElement.style.backgroundPositionX,
+        // "blankPieceY": blankPuzzleElement.style.backgroundPositionY,
+        // "blankPieceBackgroundSize": blankPuzzleElement.style.backgroundSize,
+        // "blankPieceBackgroundImage": blankPuzzleElement.style.backgroundImage,
 
         "blankElementId": blankPuzzleElement.id,
         "puzzleElementId": puzzleElement.id,
         
-        "pieceBackgroundX": puzzleElement.style.backgroundPositionX,
-        "pieceBackgroundY": puzzleElement.style.backgroundPositionY,
-        "pieceBackgroundSize": puzzleElement.style.backgroundSize,
-        "pieceBackgroundImage": puzzleElement.style.backgroundImage
+        // "pieceBackgroundX": puzzleElement.style.backgroundPositionX,
+        // "pieceBackgroundY": puzzleElement.style.backgroundPositionY,
+        // "pieceBackgroundSize": puzzleElement.style.backgroundSize,
+        // "pieceBackgroundImage": puzzleElement.style.backgroundImage
     };
 
     puzzleHistoryList.push(historyObject);

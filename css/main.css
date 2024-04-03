@@ -38,8 +38,6 @@ div.main-puzzle-container.puzzle-piece {
     border-color: white;
     border-width: 1px;
     background-image: url("../images/blank.jpg");
-    /* background-size: 150px; */
-    /* background-position: 150px 160px; */
 }
 
 div.button-container {
